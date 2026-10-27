@@ -1,9 +1,10 @@
 # Record the README demo with https://github.com/charmbracelet/vhs:
 #   vhs demo.tape
 Output demo.gif
-Set FontSize 16
-Set Width 2090
-Set Height 1360
+Set FontSize 11
+Set Framerate 15
+Set Width 1440
+Set Height 935
 Set Theme "Catppuccin Mocha"
 
 Hide
