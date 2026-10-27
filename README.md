@@ -8,20 +8,7 @@ A terminal metronome with a full-screen TUI, built with
 [Bubble Tea](https://github.com/charmbracelet/bubbletea) and
 [oto](https://github.com/ebitengine/oto).
 
-```
- ♩ clinome                                                     ▶ PLAYING
-╭─────────────────────────────────────────────────────────────────────────╮
-│                          ██████████████████                             │
-│                                      ██████                             │
-│                          ██████████████████                             │
-│                                      ██████                             │
-│                          ██████████████████                             │
-│                               ○ ○ ● ○                                   │
-╰─────────────────────────────────────────────────────────────────────────╯
-╭ TEMPO ♩ = 120 ─╮╭ METER 4 / 4 ─╮╭ SOUND Perc · Snap ╮╭ VOLUME 80% ─╮
-│ Allegro        ││ accent on    ││ hi + lo           ││ ▮▮▮▮▮▮▮▮▯▯   │
-```
-
+![demo](demo.gif)
 - Large beat display that scales to the terminal size, with a beat indicator
   row and an accent flash on the downbeat
 - 60 built-in click sounds, each with a high (accent) and low variant, with
