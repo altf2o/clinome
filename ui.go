@@ -253,6 +253,9 @@ func (m *model) tap() {
 	if len(m.taps) >= 2 {
 		span := m.taps[len(m.taps)-1].Sub(m.taps[0])
 		avg := span / time.Duration(len(m.taps)-1)
+		if avg <= 0 {
+			return
+		}
 		// Taps mark clicked beats; convert that rate to quarter notes.
 		m.setBPM(int(math.Round(float64(time.Minute) / float64(avg) * 4 / float64(m.unit))))
 	}

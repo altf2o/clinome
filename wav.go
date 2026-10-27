@@ -49,8 +49,12 @@ func decodeWAV(data []byte, targetRate int) ([]float32, error) {
 	if !haveFmt || pcm == nil {
 		return nil, errors.New("missing fmt or data chunk")
 	}
-	if channels == 0 {
-		return nil, errors.New("zero channels")
+	if channels == 0 || channels > 32 {
+		return nil, fmt.Errorf("unsupported channel count %d", channels)
+	}
+	// Bound the rate so resampling can't blow up a tiny file into gigabytes.
+	if rate < 1000 || rate > 384000 {
+		return nil, fmt.Errorf("unsupported sample rate %d", rate)
 	}
 
 	var sample func(b []byte) float32
@@ -73,6 +77,9 @@ func decodeWAV(data []byte, targetRate int) ([]float32, error) {
 	bps := int(bits / 8)
 	frameSize := bps * int(channels)
 	frames := len(pcm) / frameSize
+	if frames == 0 {
+		return nil, errors.New("empty data chunk")
+	}
 	out := make([]float32, frames*2)
 	for i := 0; i < frames; i++ {
 		f := pcm[i*frameSize:]

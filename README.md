@@ -1,5 +1,9 @@
 # clinome
 
+[![CI](https://github.com/altf2o/clinome/actions/workflows/ci.yml/badge.svg)](https://github.com/altf2o/clinome/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/altf2o/clinome.svg)](https://pkg.go.dev/github.com/altf2o/clinome)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A terminal metronome with a full-screen TUI, built with
 [Bubble Tea](https://github.com/charmbracelet/bubbletea) and
 [oto](https://github.com/ebitengine/oto).
@@ -26,12 +30,23 @@ A terminal metronome with a full-screen TUI, built with
   timers
 - Adjustable tempo, tap tempo, time signature, accent and volume
 
+## Installing
+
+Download a binary for macOS, Linux or Windows from the
+[releases page](https://github.com/altf2o/clinome/releases), or install
+with Go 1.25 or newer:
+
+```sh
+go install github.com/altf2o/clinome@latest
+```
+
 ## Building
 
-Requires Go 1.27.3 or newer (the version in `go.mod`).
+Requires Go 1.25 or newer (the version in `go.mod`).
 
 ```sh
 go build -o clinome .
+go test ./...
 ```
 
 The sounds in `Metronomes/` are embedded in the binary, so it runs from any
@@ -39,8 +54,10 @@ directory.
 
 On Linux, audio goes through ALSA (`libasound.so.2`, loaded when the program
 starts; no development headers are needed to build). It works with
-PipeWire and PulseAudio through their ALSA compatibility layers. macOS and
-Windows use their native audio APIs.
+PipeWire and PulseAudio through their ALSA compatibility layers. If it isn't
+installed, install `libasound2` (Debian/Ubuntu) or `alsa-lib`
+(Fedora/Arch). macOS and Windows use their native audio APIs. No cgo is
+needed on any platform, so cross-compiling just works.
 
 ## Usage
 
@@ -62,7 +79,9 @@ Windows use their native audio APIs.
 | `-unit` | `4` | Beat unit, the time signature denominator: `1`, `2`, `4`, `8` or `16` |
 | `-sound` | `Perc_MetronomeQuartz` | Starting sound (see `-list`) |
 | `-sounds` | built-in | Directory of sound files to use instead of the built-in set |
+| `-latency` | `50ms` | Delay the beat display so it lines up with the audio (0s–1s) |
 | `-list` | | List available sound names and exit |
+| `-version` | | Print the version and exit |
 
 ### Tempo and time signature
 
@@ -132,9 +151,50 @@ stereo, at any sample rate (resampled to 48 kHz).
 
 ## Tuning the display sync
 
-The beat display is delayed by a fixed 50 ms so it lines up with what you
-hear. If the flash looks early or late on your system, adjust
-`engine.latency` in `main.go`.
+The beat display is delayed by 50 ms by default so it lines up with what
+you hear. If the flash looks early or late on your system, adjust it with
+`-latency`. Bluetooth headphones often need 150–250 ms:
+
+```sh
+./clinome -latency 200ms
+```
+
+## How it works
+
+Most of the interesting code is in `engine.go`, which is short enough to
+read in one sitting.
+
+- **Timing in the sample domain.** `Engine` is an `io.Reader` that the audio
+  player pulls PCM from. `Read` keeps a running frame counter and, while
+  filling each buffer, starts a click voice on the exact frame where a beat
+  is due (`trigger`). Timers and goroutine scheduling never decide when a
+  click sounds, so there's no drift or jitter, whatever the buffer size.
+- **Tempo changes without stutter.** `retime` schedules the next beat
+  relative to the previous one, so changing BPM mid-bar takes effect on the
+  very next click.
+- **Mixing.** Each click is a `voice` with a frame position and an optional
+  start delay. Voices are summed, scaled by volume and clamped. The sound
+  picker's preview is two voices (hi, then lo after 350 ms) that are cut off
+  when you move to the next sound.
+- **Keeping the UI in sync.** When a beat is scheduled, the engine works out
+  how far into the buffer it falls, adds the output latency, and sends the
+  UI a message via `time.AfterFunc` at that moment. Each `Start` bumps a
+  generation number so beat messages still in flight from before a
+  stop/start are ignored.
+- **The UI** (`ui.go`) is a standard [Bubble Tea](https://github.com/charmbracelet/bubbletea)
+  model. The big digits come from a 3×5 pixel font in `font.go`, scaled to
+  fit the terminal.
+- **WAV decoding** (`wav.go`) is a small standalone RIFF parser with linear
+  resampling. It's fuzz-tested, because `-sounds` loads arbitrary files.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+The code is released under the [MIT License](LICENSE). The sounds in
+`Metronomes/` are CC0 (see below).
 
 ## Credits
 

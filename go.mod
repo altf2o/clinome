@@ -1,6 +1,6 @@
-module clinome
+module github.com/altf2o/clinome
 
-go 1.27.3
+go 1.25.0
 
 require (
 	github.com/charmbracelet/bubbletea v1.3.10
