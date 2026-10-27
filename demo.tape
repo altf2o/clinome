@@ -2,8 +2,8 @@
 #   vhs demo.tape
 Output demo.gif
 Set FontSize 16
-Set Width 1100
-Set Height 520
+Set Width 2090
+Set Height 1360
 Set Theme "Catppuccin Mocha"
 
 Hide
