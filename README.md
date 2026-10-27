@@ -9,6 +9,7 @@ A terminal metronome with a full-screen TUI, built with
 [oto](https://github.com/ebitengine/oto).
 
 ![demo](demo.gif)
+
 - Large beat display that scales to the terminal size, with a beat indicator
   row and an accent flash on the downbeat
 - 60 built-in click sounds, each with a high (accent) and low variant, with
@@ -25,6 +26,14 @@ with Go 1.25 or newer:
 
 ```sh
 go install github.com/altf2o/clinome@latest
+```
+
+The release binaries aren't signed, so on macOS a downloaded binary is
+blocked by Gatekeeper ("cannot be verified"). Clear the quarantine flag
+once after extracting it:
+
+```sh
+xattr -d com.apple.quarantine ./clinome
 ```
 
 ## Building

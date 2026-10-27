@@ -12,6 +12,10 @@ go vet ./...               # static checks
 go test -run='^$' -fuzz=FuzzDecodeWAV -fuzztime=60s .   # fuzz the WAV decoder
 ```
 
+If you have [Task](https://taskfile.dev) installed, `task build`, `task test`,
+`task snapshot` (local release build in `dist/`) and `task clean` wrap the
+common commands.
+
 CI also runs `gofmt`, [staticcheck](https://staticcheck.dev) and
 [govulncheck](https://go.dev/doc/security/vuln/) on every pull request.
 To run them locally:

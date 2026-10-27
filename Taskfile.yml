@@ -1,0 +1,31 @@
+# Tasks for https://taskfile.dev. Plain `go build` / `go test` work too.
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  build:
+    desc: Build the clinome binary
+    sources: ["*.go", "go.mod", "go.sum", "Metronomes/*.wav"]
+    generates: [clinome]
+    cmds:
+      - go build -o clinome .
+
+  test:
+    desc: Run vet and the tests with the race detector
+    cmds:
+      - go vet ./...
+      - go test -race ./...
+
+  snapshot:
+    desc: Build release archives locally in dist/ without publishing
+    cmds:
+      - goreleaser release --snapshot --clean
+
+  clean:
+    desc: Remove build output (the clinome binary and dist/)
+    cmds:
+      - rm -rf dist clinome clinome.exe
