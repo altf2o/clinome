@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"runtime"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -113,6 +114,9 @@ func run(dir string, bpm, beats, unit int, soundName string, latency time.Durati
 	player := ctx.NewPlayer(engine)
 	player.SetBufferSize(sampleRate * frameBytes * 30 / 1000)
 	player.Play()
+	// oto closes a Player once it's garbage collected, so keep it reachable
+	// for as long as the UI runs.
+	defer runtime.KeepAlive(player)
 
 	_, err = prog.Run()
 	return err
