@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"runtime"
+	"runtime/debug"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -34,7 +35,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Println("clinome", version)
+		fmt.Println("clinome", buildVersion())
 		return
 	}
 	switch {
@@ -51,6 +52,17 @@ func main() {
 		fmt.Fprintln(os.Stderr, "clinome:", err)
 		os.Exit(1)
 	}
+}
+
+// buildVersion falls back to the module version recorded by `go install`
+// when the release ldflags didn't set one.
+func buildVersion() string {
+	if version == "dev" {
+		if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" && info.Main.Version != "(devel)" {
+			return info.Main.Version
+		}
+	}
+	return version
 }
 
 func usageError(format string, args ...any) {
