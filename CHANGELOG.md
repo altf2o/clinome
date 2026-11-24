@@ -6,6 +6,9 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Raised the internal output gain (+6 dB) so the default 80% volume is louder.
+
 ## [0.1.0] - 2026-11-01
 
 First public release.

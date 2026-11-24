@@ -12,6 +12,10 @@ const (
 	channels   = 2
 	frameBytes = channels * 4 // float32 per channel
 	maxVoices  = 32
+
+	// volumeGain scales the logical 0–1 volume up by +6 dB because the built-in
+	// click samples are mastered around -14.5 dBFS for DAW headroom.
+	volumeGain float32 = 2.0
 )
 
 type voice struct {
@@ -72,6 +76,7 @@ func (e *Engine) Read(p []byte) (int, error) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
+	gain := e.volume * volumeGain
 	for i := 0; i < frames; i++ {
 		if e.running && float64(e.pos) >= e.nextBeat {
 			e.trigger(i)
@@ -90,7 +95,7 @@ func (e *Engine) Read(p []byte) (int, error) {
 				vc.pos++
 			}
 		}
-		l, r = clamp(l*e.volume), clamp(r*e.volume)
+		l, r = clamp(l*gain), clamp(r*gain)
 
 		binary.LittleEndian.PutUint32(p[i*frameBytes:], math.Float32bits(l))
 		binary.LittleEndian.PutUint32(p[i*frameBytes+4:], math.Float32bits(r))

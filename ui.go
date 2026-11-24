@@ -84,6 +84,7 @@ func newModel(e *Engine, sounds []Sound, sound, bpm, beats, unit int) model {
 	e.SetBPM(float64(bpm))
 	e.SetBeatsPerBar(beats)
 	e.SetBeatUnit(unit)
+	e.SetVolume(float32(m.volume) / 100)
 	return m
 }
 

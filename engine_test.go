@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/binary"
+	"math"
 	"testing"
 	"time"
 )
@@ -53,5 +55,35 @@ func TestBeatUnitScalesClickRate(t *testing.T) {
 		if n != 3 {
 			t.Errorf("unit %d: got %d clicks in %d frames, want 3", tc.unit, n, 2*tc.want+1)
 		}
+	}
+}
+
+func TestVolumeScalingAndClamping(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		volume float32
+		sample float32
+		want   float32
+	}{
+		{"muted", 0, 0.2, 0},
+		{"default 80%", 0.8, 0.1, 0.1 * 0.8 * volumeGain},
+		{"full 100%", 1.0, 0.1, 0.1 * volumeGain},
+		{"positive clamp", 1.0, 0.8, 1.0},
+		{"negative clamp", 1.0, -0.8, -1.0},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			e := NewEngine(120, 4, 4)
+			e.SetSound(Sound{Hi: []float32{tc.sample, tc.sample}, Lo: []float32{tc.sample, tc.sample}})
+			e.SetVolume(tc.volume)
+			e.Start()
+
+			buf := make([]byte, frameBytes)
+			e.Read(buf)
+			gotL := math.Float32frombits(binary.LittleEndian.Uint32(buf[0:4]))
+			gotR := math.Float32frombits(binary.LittleEndian.Uint32(buf[4:8]))
+			if math.Abs(float64(gotL-tc.want)) > 1e-6 || math.Abs(float64(gotR-tc.want)) > 1e-6 {
+				t.Fatalf("got (%v, %v), want (%v, %v)", gotL, gotR, tc.want, tc.want)
+			}
+		})
 	}
 }
